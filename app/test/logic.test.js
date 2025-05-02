@@ -1,60 +1,22 @@
-import { checkWinner, saveGame } from "../src/logic.js";
+import { createShuffledDeck, initializeMarket, refreshMarket } from '../src/logic';
 
-// Mock fetch globally
-global.fetch = vi.fn();
-
-beforeEach(() => {
-  fetch.mockClear();
+test('createShuffledDeck returns 15 cards', () => {
+  const deck = createShuffledDeck();
+  expect(deck.length).toBe(15);
 });
 
-describe('checkWinner', () => {
-  test('detects a horizontal win for X', () => {
-    expect(checkWinner(["X", "X", "X", "", "", "", "", "", ""])).toBe("X");
-  });
-
-  test('detects a vertical win for O', () => {
-    expect(checkWinner(["O", "", "", "O", "", "", "O", "", ""])).toBe("O");
-  });
-
-  test('detects a diagonal win for X', () => {
-    expect(checkWinner(["X", "", "", "", "X", "", "", "", "X"])).toBe("X");
-  });
-
-  test('returns null for a draw', () => {
-    expect(checkWinner(["X", "O", "X", "X", "O", "O", "O", "X", "X"])).toBe(null);
-  });
+test('initializeMarket removes 3 cards from deck', () => {
+  const deck = createShuffledDeck();
+  const market = initializeMarket(deck);
+  expect(market.length).toBe(3);
+  expect(deck.length).toBe(12);
 });
 
-describe('saveGame', () => {
-  test('sends correct POST request with headers and body', async () => {
-    const mockBoard = ["X", "O", "X", null, null, null, "O", null, "X"];
-    const mockWinner = "X";
-    const mockToken = "test-id-token";
+test('refreshMarket refills the market after placing a resource', () => {
+  let deck = ["stone", "glass", "wheat"];
+  let market = ["wood", "brick", "wheat"];
+  const { deck: newDeck, market: newMarket } = refreshMarket(deck, market, "brick");
 
-    fetch.mockResolvedValueOnce({ ok: true });
-
-    const before = new Date();
-
-    await saveGame(mockBoard, mockWinner, mockToken);
-
-    const call = fetch.mock.calls[0];
-    const body = JSON.parse(call[1].body);
-    const sentTimestamp = new Date(body.timestamp);
-
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith("http://localhost:3000/save-game", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${mockToken}`,
-      },
-      body: JSON.stringify({
-        board: mockBoard,
-        winner: mockWinner,
-        timestamp: body.timestamp,
-      }),
-    });
-
-    expect(sentTimestamp.getTime()).toBeGreaterThanOrEqual(before.getTime());
-  });
+  expect(newMarket.length).toBe(3);
+  expect(newDeck.length).toBe(3);
 });

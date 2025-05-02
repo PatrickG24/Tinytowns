@@ -3,17 +3,17 @@
 import React from 'react';
 import { useTownStore } from './store';
 
-// Map pattern color to Tailwind class
-const patternColorClass = (color) => {
-  switch (color) {
-    case 'yellow': return 'bg-yellow-300';
-    case 'brown':  return 'bg-yellow-700';
-    case 'grey':   return 'bg-gray-400';
-    case 'blue':   return 'bg-blue-300';
-    case 'red':    return 'bg-red-300';
-    default:       return '';
+const patternColorClass = (resource) => {
+  switch (resource) {
+    case 'wheat': return 'bg-yellow-300';
+    case 'wood':  return 'bg-amber-700';
+    case 'stone': return 'bg-gray-400';
+    case 'glass': return 'bg-blue-300';
+    case 'brick': return 'bg-red-500';
+    default:      return '';
   }
 };
+
 
 // Seven building cards
 const buildings = [
@@ -21,49 +21,65 @@ const buildings = [
     name: 'Farm',
     icon: '🚜',
     imageClass: 'farm',
-    pattern: ['yellow','yellow','brown','brown'],
+    pattern: [
+      ['wheat', 'wheat'],
+      ['wood',  'wood']
+    ],
     effect: 'Gain 1 point for each adjacent resource that matches the pattern.',
   },
+  
   {
     name: 'Well',
     icon: '💧',
     imageClass: 'well',
-    pattern: ['brown','grey'],
+    pattern: ['wood','stone'],
     effect: 'Gain 1 point for every water resource in the same column.',
   },
   {
     name: 'Cathedral of Catarina',
-    icon:'🟪',
+    icon:'🏰',
     imageClass:'cathedral',
-    pattern:['yellow','grey','blue'],
+    pattern:[
+      [null, 'wheat'],
+      ['stone', 'glass']
+    ],
     effect:'Gain bonus points for adjacent buildings.',
   },
   {
     name: 'Theater',
     icon: '🎭',
     imageClass:'theater',
-    pattern:['grey','brown','blue','brown'],
+    pattern:[
+      [null, 'stone', null],
+      ['wood', 'glass', 'wood']
+    ],
     effect:'Gain 1 point for each unique building in row & column.',
   },
   {
     name: 'Tavern',
     icon: '🍻',
     imageClass:'tavern',
-    pattern:['red','red','brown'],
+    pattern:['brick','brick','glass'],
     effect:'Gain 1 point for every resource adjacent to this building.',
   },
   {
     name: 'Chapel',
     icon: '⛪',
     imageClass:'chapel',
-    pattern:['blue','grey','blue','grey'],
+    pattern:[
+      [null, null, 'glass'],
+      ['stone', 'glass', 'stone']
+    ],
     effect:'Gain 1 point for each building in the same row.',
   },
   {
     name: 'Factory',
     icon: '🏭',
     imageClass:'factory',
-    pattern:['brown','red','grey','grey','red'],
+    pattern:[
+      ['wood', null, null, null],
+      ['brick', 'stone', 'stone', 'brick']
+    ],
     effect:'Gain 1 point for each different resource adjacent.',
   },
 ];
@@ -94,9 +110,14 @@ export function BuildingCards() {
               <span className="text-2xl text-black">{b.icon}</span>
             </div>
             <div className={`h-24 mb-3 bg-${b.imageClass} bg-contain bg-center bg-no-repeat`} />
-            <div className="grid grid-cols-3 gap-1 mb-3">
-              {b.pattern.map((color,i) => (
-                <div key={i} className={`w-5 h-5 ${patternColorClass(color)}`} />
+            <div
+              className="inline-grid gap-0.5 mb-3"
+              style={{
+                gridTemplateColumns: `repeat(${Array.isArray(b.pattern[0]) ? b.pattern[0].length : b.pattern.length}, 1fr)`
+              }}
+            >
+              {(Array.isArray(b.pattern[0]) ? b.pattern.flat() : b.pattern).map((resource, i) => (
+                <div key={i} className={`w-5 h-5 ${patternColorClass(resource)}`} />
               ))}
             </div>
             <div className="text-xs text-black">

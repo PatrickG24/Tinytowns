@@ -1,99 +1,160 @@
-// logic.js
+// logic.js (or deck.js)
 
-// 1. Building pattern definitions
-export const buildingPatterns = {
-  Farm: { 
-    pattern: [
-      ['yellow', 'yellow'],
-      ['brown', 'brown']
-    ]
-  },
-  Well: {
-    pattern: [
-      ['brown', 'grey']
-    ]
-  },
-  'Cathedral of Catarina': {
-    pattern: [
-      ['yellow', 'grey'],
-      ['blue', 'yellow']
-    ]
-  },
-  Theater: {
-    pattern: [
-      ['grey', 'brown', 'blue'],
-      ['brown', 'grey', 'blue']
-    ]
-  },
-  Tavern: {
-    pattern: [
-      ['red', 'red', 'brown']
-    ]
-  },
-  Chapel: {
-    pattern: [
-      ['blue', 'grey'],
-      ['blue', 'grey']
-    ]
-  },
-  Factory: {
-    pattern: [
-      ['brown', 'red', 'grey', 'grey'],
-      ['red', 'brown', 'grey', 'red']
-    ]
-  },
-};
+// Creates a shuffled deck of resources
+export function createShuffledDeck() {
+  const resources = ["wood", "stone", "brick", "wheat", "glass"];
+  let deck = [];
 
-// 2. Rotate a 2D pattern 90° clockwise
-function rotatePattern(pattern) {
-  const R = pattern.length, C = pattern[0].length;
-  const out = Array.from({ length: C }, () => Array(R).fill(null));
-  for (let r = 0; r < R; r++) {
-    for (let c = 0; c < C; c++) {
-      out[c][R - 1 - r] = pattern[r][c];
-    }
+  for (let i = 0; i < 3; i++) {
+    deck.push(...resources);
   }
-  return out;
+
+  // Fisher-Yates Shuffle
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+
+  return deck;
 }
 
-// 3. Check if a building can be placed at (row, col) in any rotation
-export function canPlaceBuilding(grid, name, row, col) {
-  const def = buildingPatterns[name];
-  if (!def) return false;
+// Draws 3 resources from the top of the deck to form the initial market
+export function initializeMarket(deck) {
+  if (deck.length < 3) throw new Error("Deck does not have enough cards to initialize market");
 
-  let pat = def.pattern;
-  for (let rot = 0; rot < 4; rot++) {
-    const R = pat.length, C = pat[0].length, N = grid.length;
-    // bounds
-    if (row + R <= N && col + C <= N) {
-      let ok = true;
-      for (let r = 0; r < R && ok; r++) {
-        for (let c = 0; c < C; c++) {
-          if (grid[row + r][col + c] !== pat[r][c]) {
-            ok = false;
-            break;
-          }
-        }
+  const market = deck.splice(0, 3);
+  return market;
+}
+
+// After placing a resource, refresh the market
+export function refreshMarket(deck, market, placedResource) {
+  const newMarket = [...market];
+  const index = newMarket.indexOf(placedResource);
+
+  if (index !== -1) {
+    newMarket.splice(index, 1); // remove only the first found copy
+  } else {
+    console.warn(`Placed resource ${placedResource} not found in market.`);
+  }
+
+  deck.push(placedResource); // Put the placed resource at bottom of deck
+
+  if (deck.length > 0 && newMarket.length < 3) {
+    newMarket.push(deck.shift()); // Refill to 3 cards
+  }
+
+  return { deck, market: newMarket };
+}
+
+export function getSelectedResourceGridString(grid, selectedCells) {
+  const keys = Object.keys(selectedCells);
+  if (keys.length === 0) return "";
+
+  const coords = keys.map((k) => k.split(",").map(Number));
+  const rows = coords.map(([r]) => r);
+  const cols = coords.map(([, c]) => c);
+
+  const minRow = Math.min(...rows);
+  const maxRow = Math.max(...rows);
+  const minCol = Math.min(...cols);
+  const maxCol = Math.max(...cols);
+
+  let result = "";
+
+  for (let r = minRow; r <= maxRow; r++) {
+    if (r !== minRow) result += "|";
+    for (let c = minCol; c <= maxCol; c++) {
+      const key = `${r},${c}`;
+      if (selectedCells[key]) {
+        result += grid[r][c] || ".";
+      } else {
+        result += ".";
       }
-      if (ok) return true;
     }
-    pat = rotatePattern(pat);
   }
-  return false;
+
+  return result;
 }
 
-// 4. Flatten and sort a 2D pattern to 1D array
-function flattenAndSort(pattern) {
-  return pattern.flat().sort();
-}
 
-// 5. Validate a set of selected resource strings against a building pattern
-export function isValidResourcePattern(buildingName, selectedResources) {
-  const def = buildingPatterns[buildingName];
-  if (!def) return false;
+export const buildingPatternCheckers = {
+  Farm: (str) =>
+    [
+      "wheatwheat|woodwood",
+      "woodwood|wheatwheat",
+      "wheatwood|wheatwood",
+      "woodwheat|woodwheat",
+    ].includes(str),
 
-  const expected = flattenAndSort(def.pattern);
-  const actual = [...selectedResources].sort();
+  Well: (str) =>
+    [
+      "woodstone",
+      "stonewood",
+      "wood|stone",
+      "stone|wood",
+    ].includes(str),
 
-  return JSON.stringify(expected) === JSON.stringify(actual);
-}
+  Theater: (str) =>
+    [
+      "woodglasswood|.stone.",
+      ".stone.|woodglasswood",
+      "wood.|glassstone|wood.",
+      ".wood|stoneglass|.wood",
+    ].includes(str),
+
+  Tavern: (str) =>
+    [
+      "brickbrickwood",
+      "woodbrickbrick",
+      "brick|brick|wood",
+      "wood|brick|brick",
+    ].includes(str),
+
+  Chapel: (str) =>
+    [
+      "..glass|stoneglassstone",
+      "stoneglassstone|..glass",
+      "glass..|stoneglassstone",
+      "stoneglassstone|glasss..",
+      "stoneglasss|glasss.|stone.",
+      "glassstone|.glass|.stone",
+      "stone.|glass.|stoneglass",
+      ".stone|.glass|glassstone",
+    ].includes(str),
+
+  Factory: (str) =>
+    [
+      "wood...|brickstonestonebrick",
+      "brickstonestonebrick|wood...",
+      "...wood|brickstonestonebrick",
+      "brickstonestonebrick|...wood",
+      "brickwood|stone.|stone.|wood.",
+      "wood.|stone.|stone.|brickwood",
+      "woodbrick|.stone|.stone|.brick",
+      ".brick|.stone|.stone|woodbrick",
+    ].includes(str),
+
+  Cottage: (str) =>
+    [
+      ".wheat|brickglass",
+      "brickglass|.wheat",
+      "wheat.|glassbrick",
+      "glassbrick|wheat.",
+      "brick.|glasswheat",
+      "glasswheat|brick.",
+      ".brick|wheatglass",
+      "wheatglass|.brick",
+    ].includes(str),
+
+  "Cathedral of Catarina": (str) =>
+    [
+      ".wheat|stoneglass",
+      "stoneglass|.wheat",
+      "wheat.|glassstone",
+      "glassstone|wheat.",
+      "stone.|glasswheat",
+      "glasswheat|stone.",
+      ".stone|wheatglass",
+      "wheatglass|.stone",
+    ].includes(str),
+};
