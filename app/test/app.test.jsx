@@ -21,6 +21,14 @@ describe("Tiny Towns UI", () => {
     expect(marketButtons.length).toBe(3);
   });
 
+  const resourceColors = {
+    wood: 'bg-amber-700',
+    stone: 'bg-gray-400',
+    brick: 'bg-red-500',
+    wheat: 'bg-yellow-300',
+    glass: 'bg-blue-300',
+  };
+  
   test("clicking a market resource and a grid cell places the resource", () => {
     const marketButtons = screen.getAllByRole("button").filter(btn =>
       ["wood", "stone", "brick", "wheat", "glass"].includes(btn.textContent)
@@ -34,7 +42,7 @@ describe("Tiny Towns UI", () => {
     const targetCell = gridButtons[0];
     fireEvent.click(targetCell);
   
-    expect(targetCell.textContent).toBe(resourceToPlace);
+    expect(targetCell.className).toContain(resourceColors[resourceToPlace]);
   });
   
 
@@ -51,7 +59,7 @@ describe("Tiny Towns UI", () => {
     const targetCell = gridButtons[0];
     fireEvent.click(targetCell);
   
-    expect(targetCell.textContent).toBe(resourceToPlace);
+    expect(targetCell.className).toContain(resourceColors[resourceToPlace]);
   
     const restartButton = screen.getByText("Restart Game");
     fireEvent.click(restartButton);
