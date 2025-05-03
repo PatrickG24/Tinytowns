@@ -59,6 +59,7 @@ describe("Tiny Towns UI", () => {
     const targetCell = gridButtons[0];
     fireEvent.click(targetCell);
   
+    // Confirm resource was placed
     expect(targetCell.className).toContain(resourceColors[resourceToPlace]);
   
     const restartButton = screen.getByText("Restart Game");
@@ -67,7 +68,12 @@ describe("Tiny Towns UI", () => {
     const gridAfterReset = screen.getAllByRole("button").filter(btn =>
       !["Restart Game", ...["wood", "stone", "brick", "wheat", "glass"]].includes(btn.textContent)
     );
-    expect(gridAfterReset[0].textContent).toBe("");
+  
+    // Check the cell no longer has any resource color
+    const classAfterReset = gridAfterReset[0].className;
+    const hasAnyResourceColor = Object.values(resourceColors).some(color => classAfterReset.includes(color));
+    expect(hasAnyResourceColor).toBe(false);
   });
+  
   
 });
