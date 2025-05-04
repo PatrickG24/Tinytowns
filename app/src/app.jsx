@@ -1,27 +1,40 @@
 import React, { useEffect } from 'react';
 import { TownGrid } from './TownGrid';
 import { useTownStore } from './store';
-import { Market } from './Market'; // you'll need the Market component too!
+import { Market } from './Market';
 import { BuildingCards } from './BuildingCards';
 
+const allResources = ['wood', 'stone', 'brick', 'wheat', 'glass'];
+
 export function App() {
-  const { selectedResource, selectResource, resetGame, initDeckAndMarket } = useTownStore((state) => ({
+  const {
+    selectedResource,
+    selectResource,
+    resetGame,
+    initDeckAndMarket,
+    overrideResourceChoicePending,
+    chooseOverrideResource,
+    cancelOverride,
+  } = useTownStore((state) => ({
     selectedResource: state.selectedResource,
     selectResource: state.selectResource,
     resetGame: state.resetGame,
     initDeckAndMarket: state.initDeckAndMarket,
+    overrideResourceChoicePending: !!state.overrideOptions,
+    chooseOverrideResource: state.chooseOverrideResource,
+    cancelOverride: state.cancelOverride,
   }));
-  
+
   useEffect(() => {
-    initDeckAndMarket(); // Initialize the deck and market when app starts
+    initDeckAndMarket();
   }, [initDeckAndMarket]);
 
   return (
-    <div className="text-center p-4">
+    <div className="text-center p-4 relative">
       <h1 className="text-3xl font-bold mb-4">Tiny Towns</h1>
 
-      <BuildingCards /> {/*Show the building cards */}
-      <Market /> {/* ✅ Now show real 3 resources from the shuffled deck */}
+      <BuildingCards />
+      <Market />
       <TownGrid />
 
       <button
@@ -30,6 +43,34 @@ export function App() {
       >
         Restart Game
       </button>
+
+      {/* ✅ Factory override selection UI */}
+      {overrideResourceChoicePending && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg w-80 text-black">
+            <h2 className="text-lg font-bold mb-4">Factory Override</h2>
+            <p className="mb-2">Choose a resource to override with:</p>
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
+              {allResources.map((res) => (
+                <button
+                  key={res}
+                  onClick={() => chooseOverrideResource(res)}
+                  className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
+                >
+                  {res}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={cancelOverride}
+              className="text-sm text-red-600 underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

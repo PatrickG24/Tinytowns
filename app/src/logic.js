@@ -46,13 +46,19 @@ export function refreshMarket(deck, market, placedResource) {
   return { deck, market: newMarket };
 }
 
-export function getSelectedResourceGridString(grid, selectedCells) {
+
+export function getSelectedResourceGridString(grid, selectedCells, factoryContents) {
   const keys = Object.keys(selectedCells);
   if (keys.length === 0) return "";
 
-  const coords = keys.map((k) => k.split(",").map(Number));
-  const rows = coords.map(([r]) => r);
-  const cols = coords.map(([, c]) => c);
+  const rows = [];
+  const cols = [];
+
+  keys.forEach(key => {
+    const [row, col] = key.split(',').map(Number);
+    rows.push(row);
+    cols.push(col);
+  });
 
   const minRow = Math.min(...rows);
   const maxRow = Math.max(...rows);
@@ -61,12 +67,14 @@ export function getSelectedResourceGridString(grid, selectedCells) {
 
   let result = "";
 
-  for (let r = minRow; r <= maxRow; r++) {
-    if (r !== minRow) result += "|";
-    for (let c = minCol; c <= maxCol; c++) {
-      const key = `${r},${c}`;
+  for (let row = minRow; row <= maxRow; row++) {
+    if (row !== minRow) result += "|";
+    for (let col = minCol; col <= maxCol; col++) {
+      const key = `${row},${col}`;
       if (selectedCells[key]) {
-        result += grid[r][c] || ".";
+        const cellValue = grid[row][col];
+        const isFactoryWithContent = cellValue === 'factory' && factoryContents[key];
+        result += isFactoryWithContent ? '.' : (cellValue || '.');
       } else {
         result += ".";
       }
