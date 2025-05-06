@@ -35,6 +35,18 @@ const buildings = [
     pattern: ['wood','stone'],
     effect: 'Gain 1 point for every water resource in the same column.',
   },
+
+  {
+    name: 'Cottage',
+    icon: '🏠',
+    imageClass: 'farm',
+    pattern: [
+      [null, 'wheat'],
+      ['brick',  'glass']
+    ],
+    effect: 'Gain 3 points if fed.',
+  },
+
   {
     name: 'Cathedral of Catarina',
     icon:'🏰',
