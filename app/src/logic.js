@@ -166,3 +166,38 @@ export const buildingPatternCheckers = {
       "wheatglass|.stone",
     ].includes(str),
 };
+
+export function calculateScore(grid) {
+  let score = 0;
+  let hasCathedral = false;
+  let emptySpaces = 0;
+
+  for (let row of grid) {
+    for (let cell of row) {
+      if (!cell) {
+        emptySpaces++;
+        continue;
+      }
+
+      switch (cell) {
+        case 'cottage':
+          score += 3; // Example: Cottage = 3 points
+          break;
+        case 'cathedral':
+          score += 2; // Cathedral = 2 points + zero penalty for empty spaces
+          hasCathedral = true;
+          break;
+        // Add other buildings here if needed
+        default:
+          break;
+      }
+    }
+  }
+
+  if (!hasCathedral) {
+    score -= emptySpaces; // -1 point for each empty space if no Cathedral
+  }
+
+  return score;
+}
+

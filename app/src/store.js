@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { createShuffledDeck, initializeMarket, refreshMarket } from './logic'; // you need to have these exported
+import { createShuffledDeck, initializeMarket, refreshMarket, calculateScore as calculateScoreLogic } from './logic'; // you need to have these exported
 import { buildingPatternCheckers, getSelectedResourceGridString } from './logic';
 
 export const useTownStore = create((set, get) => ({
@@ -27,6 +27,11 @@ export const useTownStore = create((set, get) => ({
     } else {
       set({ selectedResource: resource, selectedMarketIndex: index });
     }
+  },
+
+  calculateScore: () => {
+    const grid = get().grid;
+    return calculateScoreLogic(grid);
   },
   
   
