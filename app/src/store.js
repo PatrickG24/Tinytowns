@@ -136,6 +136,7 @@ export const useTownStore = create((set, get) => ({
   clearSelection: () => set({ selectedCells: {} }),
 
   placeBuilding: (row, col) => {
+    
     const {
       grid,
       selectedBuilding,
@@ -172,6 +173,7 @@ export const useTownStore = create((set, get) => ({
     set({ grid: newGrid });
     clearSelection();
     set({ selectedBuilding: null });
+
   },
 
   cancelOverride: () => set({ overrideOptions: null, selectedResource: null, selectedMarketIndex: null }),

@@ -48,7 +48,7 @@ const buildings = [
   },
 
   {
-    name: 'Cathedral of Catarina',
+    name: 'Cathedral of Caterina',
     icon:'🏰',
     imageClass:'cathedral',
     pattern:[
@@ -82,7 +82,7 @@ const buildings = [
       [null, null, 'glass'],
       ['stone', 'glass', 'stone']
     ],
-    effect:'Gain 1 point for each building in the same row.',
+    effect:'Gain 1 point for each cottage fed.',
   },
   {
     name: 'Factory',

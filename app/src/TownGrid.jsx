@@ -17,7 +17,7 @@ const emojiMap = {
   tavern: '🍻',
   theater: '🎭',
   factory: '🏭',
-  'cathedral of catarina': '🏰',
+  'cathedral of caterina': '🏰',
 };
 
 export function TownGrid() {

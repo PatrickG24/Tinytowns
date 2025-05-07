@@ -112,10 +112,10 @@ export const buildingPatternCheckers = {
 
   Tavern: (str) =>
     [
-      "brickbrickwood",
-      "woodbrickbrick",
-      "brick|brick|wood",
-      "wood|brick|brick",
+      "brickbrickglass",
+      "glassbrickbrick",
+      "brick|brick|glass",
+      "glass|brick|brick",
     ].includes(str),
 
   Chapel: (str) =>
@@ -154,7 +154,7 @@ export const buildingPatternCheckers = {
       "wheatglass|.brick",
     ].includes(str),
 
-  "Cathedral of Catarina": (str) =>
+  "Cathedral of Caterina": (str) =>
     [
       ".wheat|stoneglass",
       "stoneglass|.wheat",
@@ -167,37 +167,223 @@ export const buildingPatternCheckers = {
     ].includes(str),
 };
 
+
+
+
 export function calculateScore(grid) {
   let score = 0;
   let hasCathedral = false;
   let emptySpaces = 0;
 
-  for (let row of grid) {
-    for (let cell of row) {
-      if (!cell) {
+  const buildingCounts = {};
+  const cottagePositions = [];
+  const theaterPositions = [];
+
+  const allResources = ['wood', 'stone', 'brick', 'wheat', 'glass'];
+
+  // Pass 1: Count and collect positions
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < grid[row].length; col++) {
+      const cell = grid[row][col];
+
+      if (!cell || allResources.includes(cell)) {
         emptySpaces++;
         continue;
       }
 
-      switch (cell) {
-        case 'cottage':
-          score += 3; // Example: Cottage = 3 points
-          break;
-        case 'cathedral':
-          score += 2; // Cathedral = 2 points + zero penalty for empty spaces
-          hasCathedral = true;
-          break;
-        // Add other buildings here if needed
-        default:
-          break;
+      buildingCounts[cell] = (buildingCounts[cell] || 0) + 1;
+
+      if (cell === 'cathedral of caterina') {
+        hasCathedral = true;
+        score += 2;
+      }
+
+      if (cell === 'cottage') {
+        cottagePositions.push({ row, col });
+      }
+
+      if (cell === 'theater') {
+        theaterPositions.push({ row, col });
       }
     }
   }
 
+  // 🏠 Cottages (fed only)
+  const totalFarms = buildingCounts['farm'] || 0;
+  const maxFedCottages = totalFarms * 4;
+  const fedCottages = cottagePositions.slice(0, maxFedCottages);
+  score += fedCottages.length * 3;
+
+  // ⛪ Chapel: +1 per fed cottage PER chapel
+  const chapelCount = buildingCounts['chapel'] || 0;
+  score += chapelCount * fedCottages.length;
+
+
+  // 💧 Wells (adjacent to cottages)
+  for (let row = 0; row < grid.length; row++) {
+    for (let col = 0; col < grid[row].length; col++) {
+      if (grid[row][col] === 'well') {
+        const neighbors = [
+          [row - 1, col],
+          [row + 1, col],
+          [row, col - 1],
+          [row, col + 1],
+        ];
+        let adjacentCottages = 0;
+        for (const [r, c] of neighbors) {
+          if (
+            r >= 0 && r < grid.length &&
+            c >= 0 && c < grid[0].length &&
+            grid[r][c] === 'cottage'
+          ) {
+            adjacentCottages++;
+          }
+        }
+        score += Math.min(adjacentCottages, 4);
+      }
+    }
+  }
+
+  // 🎭 Theater
+  for (const { row, col } of theaterPositions) {
+    const uniqueBuildings = new Set();
+
+    for (let c = 0; c < grid[row].length; c++) {
+      const val = grid[row][c];
+      if (val && val !== 'theater' && !allResources.includes(val)) {
+        uniqueBuildings.add(val);
+      }
+    }
+
+    for (let r = 0; r < grid.length; r++) {
+      const val = grid[r][col];
+      if (val && val !== 'theater' && !allResources.includes(val)) {
+        uniqueBuildings.add(val);
+      }
+    }
+
+    score += uniqueBuildings.size;
+  }
+
+  // 🍻 Tavern scoring
+  const tavernCount = buildingCounts['tavern'] || 0;
+  const tavernScores = [0, 2, 5, 9, 14, 20]; // index = tavern count
+  score += tavernScores[Math.min(tavernCount, 5)];
+
+
+  // ⛔ Empty tile penalty (resource tiles count as empty)
   if (!hasCathedral) {
-    score -= emptySpaces; // -1 point for each empty space if no Cathedral
+    score -= emptySpaces;
   }
 
   return score;
 }
+
+
+// export function calculateScore(grid) {
+//   let score = 0;
+//   let hasCathedral = false;
+//   let emptySpaces = 0;
+
+//   const buildingCounts = {};
+//   const cottagePositions = [];
+//   const theaterPositions = [];
+
+//   const allResources = ['wood', 'stone', 'brick', 'wheat', 'glass'];
+
+//   // Pass 1: Count and collect positions
+//   for (let row = 0; row < grid.length; row++) {
+//     for (let col = 0; col < grid[row].length; col++) {
+//       const cell = grid[row][col];
+
+//       if (!cell || allResources.includes(cell)) {
+//         emptySpaces++;
+//         continue;
+//       }
+
+//       buildingCounts[cell] = (buildingCounts[cell] || 0) + 1;
+
+//       if (cell === 'cathedral of caterina') {
+//         hasCathedral = true;
+//         score += 2;
+//       }
+
+//       if (cell === 'cottage') {
+//         cottagePositions.push({ row, col });
+//       }
+
+//       if (cell === 'theater') {
+//         theaterPositions.push({ row, col });
+//       }
+//     }
+//   }
+
+//   // Cottages (fed only)
+//   const totalFarms = buildingCounts['farm'] || 0;
+//   const maxFedCottages = totalFarms * 4;
+//   const fedCottages = cottagePositions.slice(0, maxFedCottages);
+//   score += fedCottages.length * 3;
+
+//   // Wells (adjacent to cottages)
+//   for (let row = 0; row < grid.length; row++) {
+//     for (let col = 0; col < grid[row].length; col++) {
+//       if (grid[row][col] === 'well') {
+//         const neighbors = [
+//           [row - 1, col],
+//           [row + 1, col],
+//           [row, col - 1],
+//           [row, col + 1],
+//         ];
+//         let adjacentCottages = 0;
+//         for (const [r, c] of neighbors) {
+//           if (
+//             r >= 0 && r < grid.length &&
+//             c >= 0 && c < grid[0].length &&
+//             grid[r][c] === 'cottage'
+//           ) {
+//             adjacentCottages++;
+//           }
+//         }
+//         score += Math.min(adjacentCottages, 4);
+//       }
+//     }
+//   }
+
+//   // Theater scoring
+//   for (const { row, col } of theaterPositions) {
+//     const uniqueBuildings = new Set();
+
+//     // Same row
+//     for (let c = 0; c < grid[row].length; c++) {
+//       const val = grid[row][c];
+//       if (val && val !== 'theater' && !allResources.includes(val)) {
+//         uniqueBuildings.add(val);
+//       }
+//     }
+
+//     // Same column
+//     for (let r = 0; r < grid.length; r++) {
+//       const val = grid[r][col];
+//       if (val && val !== 'theater' && !allResources.includes(val)) {
+//         uniqueBuildings.add(val);
+//       }
+//     }
+
+//     score += uniqueBuildings.size;
+//   }
+
+//   // Tavern scoring
+//   const tavernCount = buildingCounts['tavern'] || 0;
+//   const tavernScores = [0, 2, 5, 9, 14, 20]; // index = number of taverns
+//   score += tavernScores[Math.min(tavernCount, 5)];
+
+//   // Empty space penalty unless cathedral is built
+//   if (!hasCathedral) {
+//     score -= emptySpaces;
+//   }
+
+//   return score;
+// }
+
+
 
