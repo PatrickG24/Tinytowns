@@ -36,39 +36,74 @@ app.use(express.json());
 
 
 
-// app.get("/test-firestore", async (req, res) => {
-//   try {
-//     const testData = {
-//       message: "Hello from test endpoint yay",
-//       timestamp: new Date().toISOString(),
-//     };
+app.post("/save-user-game", async (req, res) => {
+  const idToken = req.headers.authorization?.split("Bearer ")[1];
 
-//     const docRef = await db.collection("test").add(testData);
-
-//     console.log(`✅ Test document written with ID: ${docRef.id}`);
-//     res.status(200).send({ success: true, docId: docRef.id });
-//   } catch (error) {
-//     console.error("❌ Failed to write test document:", error);
-//     res.status(500).send({ error: "Failed to write test document" });
-//   }
-// });
-
-app.post("/test-save-game", async (req, res) => {
-  const { score } = req.body;
+  if (!idToken) {
+    return res.status(401).send({ error: "Missing ID token" });
+  }
 
   try {
-    const docRef = await db.collection("test").add({
-      score,
-      timestamp: new Date().toISOString(),
-    });
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    const { score, startTime, endTime, grid } = req.body;
 
-    console.log("🧪 Score saved to test collection:", score);
+    const docRef = await db
+      .collection("users")
+      .doc(uid)
+      .collection("games")
+      .add({
+        score,
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        grid,
+      });
+
+    console.log(`✅ Game saved for user ${uid}, game ID: ${docRef.id}`);
     res.status(200).send({ success: true, docId: docRef.id });
   } catch (error) {
-    console.error("❌ Failed to save score:", error);
-    res.status(500).send({ error: "Failed to save score" });
+    // console.error("❌ Failed to save user game:", error);
+    console.error("❌ Failed to save user game:");
+    console.error("Message:", error.message);
+    console.error("Stack:", error.stack);
+    console.error("Body:", req.body);
+
+    res.status(500).send({ error: "Failed to save user game" });
   }
 });
+
+
+
+
+// app.post("/save-user-game", async (req, res) => {
+//   const idToken = req.headers.authorization?.split("Bearer ")[1];
+
+//   if (!idToken) {
+//     return res.status(401).send({ error: "Missing ID token" });
+//   }
+
+//   try {
+//     const decodedToken = await admin.auth().verifyIdToken(idToken);
+//     const uid = decodedToken.uid;
+//     const { score, startTime, endTime } = req.body;
+
+//     const docRef = await db
+//       .collection("users")
+//       .doc(uid)
+//       .collection("games")
+//       .add({
+//         score,
+//         startTime: new Date(startTime).toISOString(),
+//         endTime: new Date(endTime).toISOString(),
+//       });
+
+//     console.log(`✅ Game saved for user ${uid}, game ID: ${docRef.id}`);
+//     res.status(200).send({ success: true, docId: docRef.id });
+//   } catch (error) {
+//     console.error("❌ Failed to save user game:", error);
+//     res.status(500).send({ error: "Failed to save user game" });
+//   }
+// });
 
 
 // ✅ Start server on port 3000
