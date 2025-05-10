@@ -73,37 +73,75 @@ app.post("/save-user-game", async (req, res) => {
 });
 
 
+app.post("/update-achievements", async (req, res) => {
+  const idToken = req.headers.authorization?.split("Bearer ")[1];
+  if (!idToken) return res.status(401).send({ error: "Missing token" });
+
+  try {
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    const uid = decoded.uid;
+    const { achievements } = req.body;
+
+    const defaultAchievements = {
+      perfectTown: false,
+      highScore: false,
+      WhatANoob: false,
+      masterArchitect: false,
+      townPlanner: false,
+      engineer: false,
+      carpenter: false,
+      buildersApprentice: false,
+      aspiringArchitect: false,
+    };
+
+    const userRef = db.collection("users").doc(uid);
+    const userDoc = await userRef.get();
+
+    // if (!userDoc.exists) {
+    //   // New user — initialize all achievements
+    //   await userRef.set({ achievements: defaultAchievements });
+    // }
 
 
-// app.post("/save-user-game", async (req, res) => {
-//   const idToken = req.headers.authorization?.split("Bearer ")[1];
 
-//   if (!idToken) {
-//     return res.status(401).send({ error: "Missing ID token" });
-//   }
+    const userData = userDoc.data() || {};
+    const existingAchievements = userData.achievements || {};
 
-//   try {
-//     const decodedToken = await admin.auth().verifyIdToken(idToken);
-//     const uid = decodedToken.uid;
-//     const { score, startTime, endTime } = req.body;
+    const achievementsToInitialize = {};
+    for (const [key, value] of Object.entries(defaultAchievements)) {
+      if (!(key in existingAchievements)) {
+        achievementsToInitialize[`achievements.${key}`] = value;
+      }
+    }
 
-//     const docRef = await db
-//       .collection("users")
-//       .doc(uid)
-//       .collection("games")
-//       .add({
-//         score,
-//         startTime: new Date(startTime).toISOString(),
-//         endTime: new Date(endTime).toISOString(),
-//       });
+    if (Object.keys(achievementsToInitialize).length > 0) {
+      await userRef.update(achievementsToInitialize);
+    }
 
-//     console.log(`✅ Game saved for user ${uid}, game ID: ${docRef.id}`);
-//     res.status(200).send({ success: true, docId: docRef.id });
-//   } catch (error) {
-//     console.error("❌ Failed to save user game:", error);
-//     res.status(500).send({ error: "Failed to save user game" });
-//   }
-// });
+
+    const existing = userDoc.data()?.achievements || {};
+
+    const updates = {};
+    for (const [key, value] of Object.entries(achievements)) {
+      if (value === true && existing[key] !== true) {
+        updates[`achievements.${key}`] = true;
+      }
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await userRef.update(updates);
+    }
+
+    res.status(200).send({ success: true, updated: updates });
+  } catch (err) {
+    console.error("❌ Failed to update achievements:", err);
+    res.status(500).send({ error: "Update failed" });
+  }
+});
+
+
+
+
 
 
 // ✅ Start server on port 3000
