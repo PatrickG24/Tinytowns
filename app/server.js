@@ -6,53 +6,73 @@ import cors from "cors";
 import admin from "firebase-admin";
 import dotenv from "dotenv";
 
-
-
+// Load .env variables
 dotenv.config();
+
+// Resolve __dirname
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-
+// Load Firebase service account credentials
 const serviceAccount = JSON.parse(
   fs.readFileSync(path.join(__dirname, "serviceAccountKey.json"))
 );
+
+// Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
+
 const db = admin.firestore();
-
-
-
 const app = express();
-app.use(cors());
+
+// ✅ CORS for frontend at localhost:5173
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
+
+// ✅ JSON parsing middleware
 app.use(express.json());
 
 
-app.post("/save-game", async (req, res) => {
-  const idToken = req.headers.authorization?.split("Bearer ")[1];
+
+// app.get("/test-firestore", async (req, res) => {
+//   try {
+//     const testData = {
+//       message: "Hello from test endpoint yay",
+//       timestamp: new Date().toISOString(),
+//     };
+
+//     const docRef = await db.collection("test").add(testData);
+
+//     console.log(`✅ Test document written with ID: ${docRef.id}`);
+//     res.status(200).send({ success: true, docId: docRef.id });
+//   } catch (error) {
+//     console.error("❌ Failed to write test document:", error);
+//     res.status(500).send({ error: "Failed to write test document" });
+//   }
+// });
+
+app.post("/test-save-game", async (req, res) => {
+  const { score } = req.body;
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-    const { board, winner, timestamp } = req.body;
-    console.log(`save-game params ${uid}  ${board}  ${winner}  ${timestamp}`);
-
-    await db.collection("games").add({
-      uid,
-      board,
-      winner,
-      timestamp: timestamp || new Date().toISOString(),
+    const docRef = await db.collection("test").add({
+      score,
+      timestamp: new Date().toISOString(),
     });
 
-    res.status(200).send({ success: true });
+    console.log("🧪 Score saved to test collection:", score);
+    res.status(200).send({ success: true, docId: docRef.id });
   } catch (error) {
-    console.error("Failed to save game:", error);
-    res.status(500).send({ error: "Failed to save game" });
+    console.error("❌ Failed to save score:", error);
+    res.status(500).send({ error: "Failed to save score" });
   }
 });
 
 
-
-const PORT = process.env.VITE_BACKEND_PORT || 5000;
+// ✅ Start server on port 3000
+const PORT = process.env.VITE_BACKEND_PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Backend running at http://localhost:${PORT}`);
 });
