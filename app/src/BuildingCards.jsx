@@ -25,7 +25,7 @@ const buildings = [
       ['wheat', 'wheat'],
       ['wood',  'wood']
     ],
-    effect: 'Gain 1 point for each adjacent resource that matches the pattern.',
+    effect: 'Feeds up to 4 cottages anywhere in your town.',
   },
   
   {
@@ -33,7 +33,7 @@ const buildings = [
     icon: '💧',
     imageClass: 'well',
     pattern: ['wood','stone'],
-    effect: 'Gain 1 point for every water resource in the same column.',
+    effect: 'Gain 1 point for every adjacent cottage.',
   },
 
   {
@@ -55,7 +55,7 @@ const buildings = [
       [null, 'wheat'],
       ['stone', 'glass']
     ],
-    effect:'Gain bonus points for adjacent buildings.',
+    effect:'Gain 2 points and you no longer lose points for empty spaces.',
   },
   {
     name: 'Theater',
@@ -72,7 +72,7 @@ const buildings = [
     icon: '🍻',
     imageClass:'tavern',
     pattern:['brick','brick','glass'],
-    effect:'Gain 1 point for every resource adjacent to this building.',
+    effect:'Tavern | 1 | 2 | 3 | 4 | 5     Score: | 2 | 5 | 9 | 14 | 20',
   },
   {
     name: 'Chapel',
@@ -92,7 +92,7 @@ const buildings = [
       ['wood', null, null, null],
       ['brick', 'stone', 'stone', 'brick']
     ],
-    effect:'Gain 1 point for each different resource adjacent.',
+    effect:'Gain ability to place a resource in factory and once you select that same resource from the market, you can choose to change it.',
   },
 ];
 
