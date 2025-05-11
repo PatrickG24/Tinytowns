@@ -34,14 +34,10 @@ app.use(cors({
 // ✅ JSON parsing middleware
 app.use(express.json());
 
-
-
+// ✅ Save game endpoint
 app.post("/save-user-game", async (req, res) => {
   const idToken = req.headers.authorization?.split("Bearer ")[1];
-
-  if (!idToken) {
-    return res.status(401).send({ error: "Missing ID token" });
-  }
+  if (!idToken) return res.status(401).send({ error: "Missing ID token" });
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -62,17 +58,14 @@ app.post("/save-user-game", async (req, res) => {
     console.log(`✅ Game saved for user ${uid}, game ID: ${docRef.id}`);
     res.status(200).send({ success: true, docId: docRef.id });
   } catch (error) {
-    // console.error("❌ Failed to save user game:", error);
     console.error("❌ Failed to save user game:");
     console.error("Message:", error.message);
     console.error("Stack:", error.stack);
-    console.error("Body:", req.body);
-
     res.status(500).send({ error: "Failed to save user game" });
   }
 });
 
-
+// ✅ Update achievements endpoint
 app.post("/update-achievements", async (req, res) => {
   const idToken = req.headers.authorization?.split("Bearer ")[1];
   if (!idToken) return res.status(401).send({ error: "Missing token" });
@@ -96,14 +89,6 @@ app.post("/update-achievements", async (req, res) => {
 
     const userRef = db.collection("users").doc(uid);
     const userDoc = await userRef.get();
-
-    // if (!userDoc.exists) {
-    //   // New user — initialize all achievements
-    //   await userRef.set({ achievements: defaultAchievements });
-    // }
-
-
-
     const userData = userDoc.data() || {};
     const existingAchievements = userData.achievements || {};
 
@@ -118,12 +103,9 @@ app.post("/update-achievements", async (req, res) => {
       await userRef.update(achievementsToInitialize);
     }
 
-
-    const existing = userDoc.data()?.achievements || {};
-
     const updates = {};
     for (const [key, value] of Object.entries(achievements)) {
-      if (value === true && existing[key] !== true) {
+      if (value === true && existingAchievements[key] !== true) {
         updates[`achievements.${key}`] = true;
       }
     }
@@ -139,12 +121,35 @@ app.post("/update-achievements", async (req, res) => {
   }
 });
 
+// ✅ Get user profile
+app.get("/user-profile", async (req, res) => {
+  console.log("🔍 Handling user-profile request...");
+  const idToken = req.headers.authorization?.split("Bearer ")[1];
+  if (!idToken) {
+    console.error("❌ No token provided for user-profile");
+    return res.status(401).send({ error: "Missing token" });
+  }
 
+  try {
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    const uid = decoded.uid;
 
+    const userDoc = await db.collection("users").doc(uid).get();
+    const userData = userDoc.data() || {};
+    const achievements = userData.achievements || {};
 
+    const gamesSnap = await db.collection("users").doc(uid).collection("games").get();
+    const games = gamesSnap.docs.map(doc => doc.data());
 
+    console.log("✅ Sending profile for user:", uid);
+    res.status(200).send({ achievements, games });
+  } catch (err) {
+    console.error("❌ Failed to fetch user profile:", err);
+    res.status(500).send({ error: "Profile fetch failed" });
+  }
+});
 
-// ✅ Start server on port 3000
+// ✅ Start server
 const PORT = process.env.VITE_BACKEND_PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Backend running at http://localhost:${PORT}`);
