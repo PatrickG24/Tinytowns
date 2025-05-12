@@ -12,6 +12,7 @@ export const useTownStore = create((set, get) => ({
   factoryContents: {}, // key = "row,col", value = resource (e.g., "glass")
   overrideOptions: null, // List of alternative resources
   overrideLocked: false,
+  cathedralPlaced: false,
   setGrid: (newGrid) => set({ grid: newGrid }),
 
   selectBuilding: (building) => set({ selectedBuilding: building }),
@@ -111,6 +112,7 @@ export const useTownStore = create((set, get) => ({
       market: newMarket,
       factoryContents: {},
       overrideOptions: null,
+      cathedralPlaced: false,
     });
   },
 
@@ -160,6 +162,13 @@ export const useTownStore = create((set, get) => ({
       return;
     }
 
+    // Prevent placing Cathedral of Caterina more than once
+    if (selectedBuilding === 'Cathedral of Caterina' && get().cathedralPlaced) {
+      console.warn("Cathedral already placed!");
+      return;
+    }
+
+
     const newGrid = grid.map((r) => [...r]);
 
     // Clear all selected cells
@@ -176,6 +185,11 @@ export const useTownStore = create((set, get) => ({
     console.table(newGrid);  // Shows the full 4x4 grid in the console
     clearSelection();
     set({ selectedBuilding: null });
+
+    if (selectedBuilding === 'Cathedral of Caterina') {
+      set({ cathedralPlaced: true });
+    }
+
 
 
   },
