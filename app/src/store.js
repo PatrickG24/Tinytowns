@@ -12,6 +12,7 @@ export const useTownStore = create((set, get) => ({
   factoryContents: {}, // key = "row,col", value = resource (e.g., "glass")
   overrideOptions: null, // List of alternative resources
   overrideLocked: false,
+  setGrid: (newGrid) => set({ grid: newGrid }),
 
   selectBuilding: (building) => set({ selectedBuilding: building }),
   selectResource: (resource, index) => {
@@ -171,8 +172,11 @@ export const useTownStore = create((set, get) => ({
     newGrid[row][col] = selectedBuilding.toLowerCase();
 
     set({ grid: newGrid });
+    console.log("✅ Building placed:", selectedBuilding, "at", row, col);
+    console.table(newGrid);  // Shows the full 4x4 grid in the console
     clearSelection();
     set({ selectedBuilding: null });
+
 
   },
 
