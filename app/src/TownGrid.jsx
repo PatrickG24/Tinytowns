@@ -79,9 +79,13 @@ const handleClick = (row, col) => {
           const emoji = emojiMap[cell];
 
 
+          // const baseClass = isSelected
+          //   ? 'border-4 border-blue-500'
+          //   : 'border border-gray-400';
           const baseClass = isSelected
-            ? 'border-4 border-blue-500'
+            ? 'border-4 border-blue-500 pulse-selected'
             : 'border border-gray-400';
+
 
           let bgColor = 'bg-gray-200 hover:bg-gray-300';
           if (isResource) {
@@ -91,15 +95,28 @@ const handleClick = (row, col) => {
           }
           
 
-          return (
-            <button
-              key={key}
-              onClick={() => handleClick(i, j)}
-              className={`w-16 h-16 text-xl font-bold flex items-center justify-center ${baseClass} ${bgColor}`}
-            >
-              {emoji || ''}
-            </button>
-          );
+      //     return (
+      //       <button
+      //         key={key}
+      //         onClick={() => handleClick(i, j)}
+      //         className={`w-16 h-16 text-xl font-bold flex items-center justify-center ${baseClass} ${bgColor}`}
+      //       >
+      //         {emoji || ''}
+      //       </button>
+      //     );
+
+      const isPlacedResource = ['wood', 'stone', 'brick', 'wheat', 'glass'].includes(cell);
+      const isPlacedBuilding = ['farm', 'well', 'chapel', 'cottage', 'tavern', 'theater', 'factory', 'cathedral of caterina'].includes(cell);
+
+      return (
+        <button
+          key={key}
+          onClick={() => handleClick(i, j)}
+          className={`w-16 h-16 text-xl font-bold flex items-center justify-center ${baseClass} ${bgColor} transition duration-300 ${isPlacedResource ? 'fade-in' : ''} ${isPlacedBuilding ? 'pop-in' : ''}`}        >
+          {emoji || ''}
+        </button>
+      );
+
         })
       )}
     </div>
