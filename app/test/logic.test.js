@@ -64,3 +64,104 @@ test('Factory pattern fails for mismatched layout', () => {
   const badFactory = 'glass...|brickstonestonebrick';
   expect(buildingPatternCheckers.Factory(badFactory)).toBe(false);
 });
+
+test('Theater matches pattern woodglasswood|.stone.', () => {
+  expect(buildingPatternCheckers.Theater('woodglasswood|.stone.')).toBe(true);
+});
+test('Theater matches pattern .stone.|woodglasswood', () => {
+  expect(buildingPatternCheckers.Theater('.stone.|woodglasswood')).toBe(true);
+});
+test('Theater matches pattern wood.|glassstone|wood.', () => {
+  expect(buildingPatternCheckers.Theater('wood.|glassstone|wood.')).toBe(true);
+});
+test('Theater matches pattern .wood|stoneglass|.wood', () => {
+  expect(buildingPatternCheckers.Theater('.wood|stoneglass|.wood')).toBe(true);
+});
+
+test('Tavern matches pattern brickbrickglass', () => {
+  expect(buildingPatternCheckers.Tavern('brickbrickglass')).toBe(true);
+});
+test('Tavern matches pattern glassbrickbrick', () => {
+  expect(buildingPatternCheckers.Tavern('glassbrickbrick')).toBe(true);
+});
+test('Tavern matches pattern brick|brick|glass', () => {
+  expect(buildingPatternCheckers.Tavern('brick|brick|glass')).toBe(true);
+});
+test('Tavern matches pattern glass|brick|brick', () => {
+  expect(buildingPatternCheckers.Tavern('glass|brick|brick')).toBe(true);
+});
+
+test('Chapel matches pattern ..glass|stoneglassstone', () => {
+  expect(buildingPatternCheckers.Chapel('..glass|stoneglassstone')).toBe(true);
+});
+test('Chapel matches pattern stoneglassstone|..glass', () => {
+  expect(buildingPatternCheckers.Chapel('stoneglassstone|..glass')).toBe(true);
+});
+test('Chapel matches pattern glass..|stoneglassstone', () => {
+  expect(buildingPatternCheckers.Chapel('glass..|stoneglassstone')).toBe(true);
+});
+test('Chapel matches pattern stoneglassstone|glasss..', () => {
+  expect(buildingPatternCheckers.Chapel('stoneglassstone|glasss..')).toBe(true);
+});
+test('Chapel matches pattern stoneglasss|glasss.|stone.', () => {
+  expect(buildingPatternCheckers.Chapel('stoneglasss|glasss.|stone.')).toBe(true);
+});
+test('Chapel matches pattern glassstone|.glass|.stone', () => {
+  expect(buildingPatternCheckers.Chapel('glassstone|.glass|.stone')).toBe(true);
+});
+test('Chapel matches pattern stone.|glass.|stoneglass', () => {
+  expect(buildingPatternCheckers.Chapel('stone.|glass.|stoneglass')).toBe(true);
+});
+test('Chapel matches pattern .stone|.glass|glassstone', () => {
+  expect(buildingPatternCheckers.Chapel('.stone|.glass|glassstone')).toBe(true);
+});
+
+test('Cottage matches .wheat|brickglass', () => {
+  expect(buildingPatternCheckers.Cottage('.wheat|brickglass')).toBe(true);
+});
+test('Cottage matches brickglass|.wheat', () => {
+  expect(buildingPatternCheckers.Cottage('brickglass|.wheat')).toBe(true);
+});
+test('Cottage matches wheat.|glassbrick', () => {
+  expect(buildingPatternCheckers.Cottage('wheat.|glassbrick')).toBe(true);
+});
+test('Cottage matches glassbrick|wheat.', () => {
+  expect(buildingPatternCheckers.Cottage('glassbrick|wheat.')).toBe(true);
+});
+test('Cottage matches brick.|glasswheat', () => {
+  expect(buildingPatternCheckers.Cottage('brick.|glasswheat')).toBe(true);
+});
+test('Cottage matches glasswheat|brick.', () => {
+  expect(buildingPatternCheckers.Cottage('glasswheat|brick.')).toBe(true);
+});
+test('Cottage matches .brick|wheatglass', () => {
+  expect(buildingPatternCheckers.Cottage('.brick|wheatglass')).toBe(true);
+});
+test('Cottage matches wheatglass|.brick', () => {
+  expect(buildingPatternCheckers.Cottage('wheatglass|.brick')).toBe(true);
+});
+
+test('Cathedral matches .wheat|stoneglass', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('.wheat|stoneglass')).toBe(true);
+});
+test('Cathedral matches stoneglass|.wheat', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('stoneglass|.wheat')).toBe(true);
+});
+test('Cathedral matches wheat.|glassstone', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('wheat.|glassstone')).toBe(true);
+});
+test('Cathedral matches glassstone|wheat.', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('glassstone|wheat.')).toBe(true);
+});
+test('Cathedral matches stone.|glasswheat', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('stone.|glasswheat')).toBe(true);
+});
+test('Cathedral matches glasswheat|stone.', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('glasswheat|stone.')).toBe(true);
+});
+test('Cathedral matches .stone|wheatglass', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('.stone|wheatglass')).toBe(true);
+});
+test('Cathedral matches wheatglass|.stone', () => {
+  expect(buildingPatternCheckers['Cathedral of Caterina']('wheatglass|.stone')).toBe(true);
+});
