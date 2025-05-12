@@ -13,6 +13,8 @@ export const useTownStore = create((set, get) => ({
   overrideOptions: null, // List of alternative resources
   overrideLocked: false,
   cathedralPlaced: false,
+
+  
   setGrid: (newGrid) => set({ grid: newGrid }),
 
   selectBuilding: (building) => set({ selectedBuilding: building }),
